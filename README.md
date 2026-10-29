@@ -1,10 +1,13 @@
+<p align="center">
+  <img src="public/icons/flowpdf-app-icon.svg" alt="FlowPDF Logo" width="96" height="96" />
+</p>
+
 # FlowPDF
 
 > **A fast, privacy-first PDF and document workspace that runs 100% inside your web browser. No server uploads. No data collection. Free and open source.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-flowpdf.vercel.app-1B365D?style=for-the-badge&logo=vercel)](https://flowpdf.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Zero Server Uploads](https://img.shields.io/badge/Privacy-Zero%20Uploads-brightgreen.svg?style=for-the-badge)](#privacy-guarantee)
 [![Built with React](https://img.shields.io/badge/React-18-61dafb.svg?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 

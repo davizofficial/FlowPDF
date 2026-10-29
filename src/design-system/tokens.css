@@ -1,0 +1,52 @@
+/* FlowPDF Design System Tokens: Navy Blue Primary Palette */
+:root {
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F5F9;
+  --color-ink: #0F172A;
+  --color-muted: #475569;
+  --color-border: #E2E8F0;
+  --color-primary: #1B365D;
+  --color-primary-hover: #122644;
+  --color-primary-ink: #FFFFFF;
+  --color-success: #15803D;
+  --color-warning: #B45309;
+  --color-warning-bg: #FEF3C7;
+  --color-danger: #B91C1C;
+  --color-danger-bg: #FEE2E2;
+
+  --font-display: "Bricolage Grotesque", system-ui, -apple-system, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+
+  --radius-control: 6px;
+  --radius-panel: 8px;
+  --radius-dialog: 12px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --motion-fast: 120ms;
+  --motion-enter: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-enter: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

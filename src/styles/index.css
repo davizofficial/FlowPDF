@@ -1,0 +1,138 @@
+@import '../design-system/tokens.css';
+@import '../design-system/typography.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes fadeUpSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageTransitionSmooth {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.992);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes panelRevealSmooth {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes routeBarSweep {
+  0% {
+    opacity: 0.95;
+    transform: scaleX(0.08);
+  }
+  60% {
+    opacity: 0.95;
+    transform: scaleX(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fadeInSmooth {
+  from {
+    opacity: 0;
+    transform: scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUpSmooth 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-page-transition {
+  animation: pageTransitionSmooth 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+.animate-stage-1 {
+  animation: pageTransitionSmooth 440ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+}
+
+.animate-stage-2 {
+  animation: pageTransitionSmooth 480ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both;
+}
+
+.animate-stage-3 {
+  animation: pageTransitionSmooth 520ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+}
+
+.animate-panel-reveal {
+  animation: panelRevealSmooth 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-route-bar {
+  transform-origin: left center;
+  animation: routeBarSweep 580ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeInSmooth 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.smooth-interactive {
+  transition:
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-up,
+  .animate-page-transition,
+  .animate-stage-1,
+  .animate-stage-2,
+  .animate-stage-3,
+  .animate-panel-reveal,
+  .animate-route-bar,
+  .animate-fade-in {
+    animation: none !important;
+  }
+  .smooth-interactive {
+    transition: none !important;
+  }
+}

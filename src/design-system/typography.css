@@ -1,0 +1,33 @@
+/* FlowPDF Typography & Editorial Hierarchy */
+h1,
+h2,
+h3,
+.font-display-heading {
+  font-family: var(--font-display);
+  letter-spacing: -0.022em;
+  color: var(--color-ink);
+  font-feature-settings: "ss01" on, "cv01" on;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background-color: var(--color-canvas);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+code,
+pre,
+.font-mono-code,
+.tabular-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle architectural grid background for empty drafting surface */
+.workbench-drafting-grid {
+  background-color: var(--color-surface);
+  background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+  background-size: 18px 18px;
+}

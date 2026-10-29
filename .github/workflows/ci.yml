@@ -1,0 +1,35 @@
+name: FlowPDF CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies reproducibly
+        run: npm ci
+
+      - name: Run TypeScript strict typecheck
+        run: npm run typecheck
+
+      - name: Run ESLint static analysis
+        run: npm run lint
+
+      - name: Run unit, integration, and privacy test suites
+        run: npm test
+
+      - name: Build production static bundle
+        run: npm run build

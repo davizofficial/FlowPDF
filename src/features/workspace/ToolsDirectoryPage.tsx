@@ -63,7 +63,7 @@ export const ToolsDirectoryPage: React.FC = () => {
       {/* Header Banner */}
       <section className="animate-stage-1 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl space-y-2">
+          <div className="flex-1 space-y-2 text-left">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               <span>All-in-One PDF Workspace ({availableTools.length} Active Tools)</span>
@@ -76,7 +76,7 @@ export const ToolsDirectoryPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="w-full lg:w-80">
+          <div className="w-full lg:w-80 shrink-0">
             <label htmlFor="workspace-tools-filter" className="sr-only">
               Filter PDF workspace tools
             </label>

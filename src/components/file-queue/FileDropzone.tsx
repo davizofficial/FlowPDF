@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, FilePlus2 } from 'lucide-react';
+import { Upload, FilePlus2, ShieldCheck, Plus } from 'lucide-react';
 import { en } from '../../i18n/en';
 import type { ToolDefinition } from '../../processing/shared-types';
 
@@ -41,6 +41,40 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     }
   };
 
+  const getSelectButtonLabel = () => {
+    if (tool.id.includes('word')) return 'Select WORD files';
+    if (tool.id.includes('excel')) return 'Select EXCEL files';
+    if (tool.id.includes('powerpoint')) return 'Select POWERPOINT files';
+    if (tool.id.includes('image') || tool.id.includes('jpg') || tool.id.includes('png')) return 'Select Images';
+    return tool.allowMultipleFiles ? 'Select PDF files' : 'Select PDF file';
+  };
+
+  const getButtonBgClass = () => {
+    switch (tool.id) {
+      case 'merge-pdf':
+      case 'insert-replace-pages':
+      case 'copy-pdf':
+        return 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/25';
+      case 'split-pdf':
+      case 'extract-pages':
+      case 'remove-pages':
+        return 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/25';
+      case 'compress-pdf':
+        return 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25';
+      case 'word-to-pdf':
+      case 'pdf-to-word':
+        return 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/25';
+      case 'excel-to-pdf':
+      case 'pdf-to-excel':
+        return 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/25';
+      case 'powerpoint-to-pdf':
+      case 'pdf-to-powerpoint':
+        return 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-600/25';
+      default:
+        return 'bg-primary hover:bg-primary-hover text-white shadow-primary/25';
+    }
+  };
+
   if (hasExistingItems) {
     return (
       <div
@@ -50,22 +84,27 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         }}
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
-        className={`flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-200 bg-slate-50/80 px-5 py-3 transition-all duration-200 ${
+        className={`flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/90 px-6 py-3.5 transition-all duration-200 ${
           isDragOver ? 'bg-primary/10 border-primary' : ''
         } ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
       >
-        <div className="flex items-center gap-2.5 text-xs text-slate-700">
-          <div className="flex h-7 w-7 items-center justify-center rounded-control bg-primary/10 text-primary">
+        <div className="flex items-center gap-3 text-xs text-slate-700">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Upload className="h-4 w-4" aria-hidden="true" />
           </div>
-          <label
-            htmlFor={`file-input-${tool.id}`}
-            className="cursor-pointer font-bold text-ink"
-          >
-            {tool.allowMultipleFiles
-              ? 'Drag more files here or choose from device'
-              : en.dropzone.prompt}
-          </label>
+          <div>
+            <label
+              htmlFor={`file-input-${tool.id}`}
+              className="cursor-pointer font-bold text-ink hover:text-primary transition-colors block"
+            >
+              {tool.allowMultipleFiles
+                ? 'Drop more files here or choose from your device'
+                : en.dropzone.prompt}
+            </label>
+            <span className="text-[11px] text-slate-500">
+              Accepted: {tool.acceptedExtensions.join(', ')}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -83,9 +122,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
             type="button"
             disabled={disabled}
             onClick={() => inputRef.current?.click()}
-            className="smooth-interactive inline-flex items-center gap-1.5 rounded-control border-2 border-slate-300 bg-surface px-3 py-1.5 text-xs font-bold text-ink hover:border-primary hover:text-primary hover:bg-slate-50"
+            className="smooth-interactive inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-ink shadow-xs hover:border-primary hover:text-primary hover:bg-slate-50"
           >
-            <FilePlus2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            <Plus className="h-4 w-4 text-primary" aria-hidden="true" />
             <span>
               {tool.allowMultipleFiles
                 ? en.dropzone.appendLabel
@@ -105,58 +144,65 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
       }}
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
-      className={`flex flex-1 flex-col items-center justify-center p-6 sm:p-10 min-h-[380px] lg:min-h-[460px] w-full text-center transition-all duration-300 ${
+      className={`flex flex-1 flex-col items-center justify-center p-8 sm:p-14 min-h-[420px] lg:min-h-[500px] w-full text-center transition-all duration-300 ${
         disabled ? 'opacity-60 pointer-events-none' : ''
       }`}
     >
       <div
-        className={`w-full max-w-lg mx-auto rounded-dialog border-2 border-dashed p-8 sm:p-12 transition-all duration-300 flex flex-col items-center justify-center space-y-4 shadow-xs ${
+        className={`w-full max-w-xl mx-auto rounded-3xl border-2 border-dashed p-8 sm:p-14 transition-all duration-300 flex flex-col items-center justify-center space-y-6 ${
           isDragOver
-            ? 'border-primary bg-primary/[0.08] scale-[1.01] shadow-md'
-            : 'border-slate-300 bg-slate-50/70 hover:border-primary/60 hover:bg-primary/[0.03]'
+            ? 'border-primary bg-primary/[0.06] scale-[1.01] shadow-xl'
+            : 'border-slate-300 bg-slate-50/60 hover:border-slate-400 hover:bg-slate-50'
         }`}
       >
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary border-2 border-primary/20 shadow-xs">
-          <Upload className="h-8 w-8 transition-transform duration-300" aria-hidden="true" />
-          <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-        </div>
+        {/* Hidden Input for Accessible File Selection */}
+        <input
+          ref={inputRef}
+          id={`file-input-${tool.id}`}
+          type="file"
+          accept={acceptAttr}
+          multiple={tool.allowMultipleFiles}
+          disabled={disabled}
+          onChange={handleFileChange}
+          className="sr-only"
+        />
 
-        <div className="space-y-1.5 max-w-md">
-          <label
-            htmlFor={`file-input-${tool.id}`}
-            className="block cursor-pointer font-display text-lg sm:text-xl font-bold text-ink"
-          >
-            {en.dropzone.prompt}
-          </label>
-          <p className="text-xs sm:text-sm font-medium text-slate-600">
-            Drag and drop {tool.allowMultipleFiles ? 'documents' : 'your file'} directly into the box, or browse
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-          <input
-            ref={inputRef}
-            id={`file-input-${tool.id}`}
-            type="file"
-            accept={acceptAttr}
-            multiple={tool.allowMultipleFiles}
-            disabled={disabled}
-            onChange={handleFileChange}
-            className="sr-only"
-          />
+        {/* The Signature Giant iLovePDF CTA Button */}
+        <div className="flex flex-col items-center space-y-3">
           <button
             type="button"
             disabled={disabled}
             onClick={() => inputRef.current?.click()}
-            className="smooth-interactive inline-flex items-center gap-2 rounded-control bg-primary px-6 py-3 text-sm font-bold text-primary-ink shadow-sm hover:bg-primary-hover hover:shadow-md hover:-translate-y-0.5"
+            className={`smooth-interactive inline-flex items-center justify-center gap-3.5 rounded-2xl px-8 sm:px-10 py-5 text-lg sm:text-xl font-bold shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 cursor-pointer ${getButtonBgClass()}`}
           >
-            <FilePlus2 className="h-4.5 w-4.5" aria-hidden="true" />
-            <span>{en.dropzone.buttonLabel}</span>
+            <FilePlus2 className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+            <span>{getSelectButtonLabel()}</span>
           </button>
+
+          <p className="text-sm font-semibold text-slate-500">
+            or drop files here
+          </p>
         </div>
 
-        <div className="pt-2 text-xs font-mono font-semibold text-slate-500">
-          Accepted: {tool.acceptedExtensions.join(', ')}
+        {/* Accessible Prompt Label */}
+        <div className="space-y-1">
+          <label
+            htmlFor={`file-input-${tool.id}`}
+            className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+          >
+            {en.dropzone.prompt}
+          </label>
+        </div>
+
+        {/* Accepted Formats & In-Browser Guarantee */}
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-200/80 text-xs font-medium text-slate-500">
+          <span className="font-mono text-[11px] bg-slate-200/70 text-slate-700 px-2.5 py-0.5 rounded-md font-semibold">
+            Formats: {tool.acceptedExtensions.join(', ')}
+          </span>
+          <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-md">
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>100% In-Browser &bull; Files never leave your device</span>
+          </span>
         </div>
       </div>
     </div>

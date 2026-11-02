@@ -31,11 +31,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 w-full border-b border-primary-hover/80 bg-primary text-white shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:h-16 sm:px-6 sm:py-0">
-        {/* Left Section: Brand Logo (Navigates directly to Index) */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Left Section: Brand Logo + All Tools link right next to it with spacing */}
+        <div className="flex items-center gap-4 sm:gap-6 shrink-0">
           <Link
             to="/"
-            className="flex items-center gap-2.5 text-white focus-visible:rounded-control"
+            className="flex items-center gap-2.5 text-white focus-visible:rounded-control shrink-0"
           >
             <img
               src="/icons/flowpdf-app-icon.svg"
@@ -43,22 +43,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               aria-hidden="true"
               className="h-8 w-8 shrink-0 rounded-xl ring-1 ring-white/30"
             />
-            <span className="font-display text-lg sm:text-xl font-black tracking-tight text-white">
+            <span className="font-display text-lg sm:text-xl font-black tracking-tight text-white whitespace-nowrap">
               {en.brand.name}
             </span>
           </Link>
-        </div>
 
-        {/* Right Section: Quick Index Tools Link, Search Input, and Privacy Badge */}
-        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             to="/tools"
-            className="smooth-interactive inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white/90 hover:bg-white/15 hover:text-white transition-colors"
+            className="smooth-interactive inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors shrink-0"
           >
             <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>All Tools</span>
+            <span className="whitespace-nowrap">All Tools</span>
           </Link>
+        </div>
 
+        {/* Right Section: Search Input and Privacy Badge */}
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Quick Search */}
           <div
             role="search"

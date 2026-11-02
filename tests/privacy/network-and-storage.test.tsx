@@ -139,23 +139,19 @@ describe('Privacy, Zero-Upload Guarantee & Accessibility UI Verification', () =>
     ).toBeGreaterThanOrEqual(1);
   });
 
-  it('toggles the tools sidebar open and closed using the 3-line hamburger button', () => {
+  it('renders a clean header without sidebar toggle and supports direct index navigation', () => {
     render(
       <MemoryRouter initialEntries={['/tools/merge-pdf']}>
         <AppRouter />
       </MemoryRouter>
     );
 
-    const toggleBtn = screen.getByRole('button', {
-      name: /Toggle tools sidebar/i,
-    });
-    expect(toggleBtn).toHaveAttribute('aria-expanded', 'true');
+    expect(
+      screen.queryByRole('button', { name: /Toggle tools sidebar/i })
+    ).not.toBeInTheDocument();
 
-    fireEvent.click(toggleBtn);
-    expect(toggleBtn).toHaveAttribute('aria-expanded', 'false');
-
-    fireEvent.click(toggleBtn);
-    expect(toggleBtn).toHaveAttribute('aria-expanded', 'true');
+    const brandLink = screen.getByRole('link', { name: /FlowPDF/i });
+    expect(brandLink).toHaveAttribute('href', '/');
   });
 
   it('renders the Scanned PDF full-screen modal with exact OCR prompt copywriting', () => {

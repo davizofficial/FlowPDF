@@ -5,6 +5,8 @@ import {
   AlertCircle,
   ShieldCheck,
   LayoutGrid,
+  ArrowRight,
+  Sliders,
 } from 'lucide-react';
 import { FileDropzone } from '../../components/file-queue/FileDropzone';
 import { FileQueueList } from '../../components/file-queue/FileQueueList';
@@ -105,98 +107,80 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
         })
       );
 
-      setQueue((prev) => (tool.allowMultipleFiles ? [...prev, ...newItems] : newItems));
+      setQueue((prev) => {
+        if (!tool.allowMultipleFiles) {
+          return newItems;
+        }
+        return [...prev, ...newItems];
+      });
+
       setLiveAnnouncement(
-        `Added ${newItems.length} ${
-          newItems.length === 1 ? 'file' : 'files'
-        } to ${tool.name}.`
+        `${newItems.length} file${
+          newItems.length === 1 ? '' : 's'
+        } added to queue.`
       );
     },
     [tool]
   );
 
   const handleMoveItem = (index: number, direction: 'up' | 'down') => {
-    const targetIdx = direction === 'up' ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= queue.length) return;
-    const next = [...queue];
-    const [moved] = next.splice(index, 1);
-    next.splice(targetIdx, 0, moved);
-    setQueue(next);
+    setQueue((prev) => {
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const copy = [...prev];
+      const [moved] = copy.splice(index, 1);
+      copy.splice(targetIndex, 0, moved);
+      return copy;
+    });
     setResult(null);
-    setLiveAnnouncement(
-      `Moved ${moved.name} to position ${targetIdx + 1} of ${next.length}.`
-    );
   };
 
-  const handleReorderDrag = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
-    const next = [...queue];
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    setQueue(next);
+  const handleReorderDrag = (sourceIndex: number, targetIndex: number) => {
+    setQueue((prev) => {
+      if (sourceIndex === targetIndex) return prev;
+      const copy = [...prev];
+      const [moved] = copy.splice(sourceIndex, 1);
+      copy.splice(targetIndex, 0, moved);
+      return copy;
+    });
     setResult(null);
-    setLiveAnnouncement(
-      `Moved ${moved.name} to position ${toIndex + 1} of ${next.length}.`
-    );
   };
 
   const handleRemoveItem = (sessionId: string) => {
-    const removed = queue.find((i) => i.sessionId === sessionId);
-    const next = queue.filter((i) => i.sessionId !== sessionId);
-    setQueue(next);
+    setQueue((prev) => prev.filter((i) => i.sessionId !== sessionId));
     setResult(null);
-    if (removed) {
-      setLiveAnnouncement(
-        `Removed ${removed.name}. ${next.length} files remaining.`
-      );
-    }
   };
 
   const handleClearQueue = () => {
-    if (isProcessing || result) {
-      const confirmed = window.confirm(
-        'Clear all files and reset the current workspace?'
-      );
-      if (!confirmed) return;
-    }
     setQueue([]);
-    setPageSequence([]);
     setResult(null);
     setErrorMsg(null);
-    setLiveAnnouncement('Cleared all files.');
   };
 
   const handleCancelProcessing = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
-      abortControllerRef.current = null;
     }
-    setIsProcessing(false);
-    setProgress(null);
-    setErrorMsg(en.errors.cancelled);
   };
 
   const readyItems = queue.filter((i) => i.status === 'ready');
   const canExecute =
-    !isProcessing && readyItems.length >= tool.minFiles;
+    readyItems.length >= tool.minFiles &&
+    (!tool.allowMultipleFiles || readyItems.length <= 50) &&
+    !isProcessing;
 
-  const runProcessing = async (opts: Record<string, unknown>) => {
-    setErrorMsg(null);
-    setResult(null);
-
+  const runProcessing = async (effectiveOpts: Record<string, unknown>) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsProcessing(true);
     setProgress({
       stage: 'Reading files',
-      message: 'Processing your document privately in the browser...',
+      message: 'Processing document in browser memory...',
     });
 
     try {
-      const effectiveOptions: Record<string, unknown> = {
-        ...opts,
-      };
-      if (tool.id === 'organize-pdf') {
+      const effectiveOptions = { ...effectiveOpts };
+      if (tool.id === 'organize-pdf' && pageSequence.length > 0) {
         effectiveOptions.pageSequence = pageSequence;
       }
 
@@ -281,20 +265,53 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
     setIsOcrPromptOpen(false);
   };
 
+  const getActionBtnClasses = () => {
+    if (!canExecute) {
+      return 'bg-slate-200 text-slate-400 cursor-not-allowed';
+    }
+    switch (tool.id) {
+      case 'merge-pdf':
+      case 'insert-replace-pages':
+      case 'copy-pdf':
+        return 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/25 active:scale-[0.99]';
+      case 'split-pdf':
+      case 'extract-pages':
+      case 'remove-pages':
+        return 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25 active:scale-[0.99]';
+      case 'compress-pdf':
+        return 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 active:scale-[0.99]';
+      case 'word-to-pdf':
+      case 'pdf-to-word':
+        return 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/25 active:scale-[0.99]';
+      case 'excel-to-pdf':
+      case 'pdf-to-excel':
+        return 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25 active:scale-[0.99]';
+      case 'powerpoint-to-pdf':
+      case 'pdf-to-powerpoint':
+        return 'bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25 active:scale-[0.99]';
+      default:
+        return 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/25 active:scale-[0.99]';
+    }
+  };
+
   return (
-    <main className="flex-1 px-4 py-6 sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-5">
-        {/* Simple, Clean Tool Heading */}
-        <div className="animate-stage-1 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-1">
-              <ToolVisualIcon toolId={tool.id} size="md" />
-            </div>
+    <main className="flex-1 px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* iLovePDF Clean Tool Header */}
+        <div className="animate-stage-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <ToolVisualIcon toolId={tool.id} size="lg" />
             <div>
-              <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-                {tool.name}
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm font-medium text-slate-700">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
+                  {tool.name}
+                </h1>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{en.brand.privacyStatement}</span>
+                </div>
+              </div>
+              <p className="mt-1 text-xs sm:text-sm font-normal text-slate-500 max-w-2xl">
                 {tool.shortDescription}
               </p>
             </div>
@@ -302,16 +319,16 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
 
           <Link
             to="/tools"
-            className="smooth-interactive inline-flex items-center gap-1.5 rounded-control border-2 border-slate-300 bg-surface px-3.5 py-2 text-xs font-bold text-ink hover:border-primary hover:text-primary"
+            className="smooth-interactive inline-flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-xs hover:border-primary hover:text-primary hover:bg-slate-50"
           >
-            <LayoutGrid className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            <LayoutGrid className="h-4 w-4 text-primary" aria-hidden="true" />
             <span>All PDF Tools</span>
           </Link>
         </div>
 
-        {/* Clean Two-Column Workspace */}
-        <div className="animate-stage-2 grid grid-cols-1 overflow-hidden rounded-panel border-2 border-slate-300 bg-surface shadow-sm lg:grid-cols-12 min-h-[520px]">
-          {/* Left Column: File Upload, Queue, and Output */}
+        {/* Clean Two-Column Workspace (Canvas + Right Sidebar) */}
+        <div className="animate-stage-2 grid grid-cols-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-12 min-h-[540px]">
+          {/* Left Column: File Upload Canvas, Queue, and Output */}
           <div className="flex flex-col justify-between h-full lg:col-span-7 xl:col-span-8">
             <div className="flex flex-col flex-1">
               <FileDropzone
@@ -322,7 +339,7 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
               />
 
               {queue.length > 0 && (
-                <div className="animate-panel-reveal">
+                <div className="animate-panel-reveal p-4 sm:p-6 space-y-5">
                   <FileQueueList
                     items={queue}
                     allowReorder={tool.allowMultipleFiles}
@@ -366,7 +383,7 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
                 )}
 
               {isProcessing && (
-                <div className="p-5">
+                <div className="p-6">
                   <ProcessingStatusBar
                     progress={progress}
                     onCancel={handleCancelProcessing}
@@ -377,7 +394,7 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
               {errorMsg && (
                 <div
                   role="alert"
-                  className="flex items-start gap-3 border-t border-danger bg-danger-bg px-5 py-4 text-xs text-danger"
+                  className="flex items-start gap-3 border-t border-danger bg-danger-bg px-6 py-4 text-xs text-danger"
                 >
                   <AlertCircle
                     className="mt-0.5 h-4 w-4 shrink-0"
@@ -399,92 +416,87 @@ export const ToolWorkspace: React.FC<ToolWorkspaceProps> = ({ tool }) => {
               />
             </div>
 
-            {/* Simple Privacy Footer Note inside Workspace */}
-            <div className="flex items-center gap-2 border-t border-border bg-canvas/70 px-5 py-3 text-xs text-muted">
+            {/* In-Browser Privacy Footer Guarantee */}
+            <div className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/80 px-6 py-3 text-xs text-slate-500 font-medium">
               <ShieldCheck
-                className="h-4 w-4 text-primary shrink-0"
+                className="h-4 w-4 text-emerald-600 shrink-0"
                 aria-hidden="true"
               />
               <span>{en.brand.privacyStatement}</span>
             </div>
           </div>
 
-          {/* Right Column: Options and Primary Action */}
+          {/* Right Column: iLovePDF Style Docked Options Sidebar & Big Action Button */}
           <aside
             aria-label="Options and execution"
-            className="flex flex-col justify-between border-t border-border bg-surface-subtle/40 lg:col-span-5 lg:border-l lg:border-t-0 xl:col-span-4"
+            className="flex flex-col justify-between border-t border-slate-200 bg-slate-50/70 lg:col-span-5 lg:border-l lg:border-t-0 xl:col-span-4"
           >
-            <form onSubmit={handleExecuteTask} className="p-5 space-y-5">
-              <div className="border-b border-border pb-3">
-                <h2 className="text-sm font-bold text-ink">
-                  Options
-                </h2>
-                <p className="mt-0.5 text-xs text-muted">
-                  Adjust your preferences below before processing.
-                </p>
+            <form onSubmit={handleExecuteTask} className="p-6 flex flex-col justify-between h-full space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <h2 className="font-display text-sm font-bold text-ink">
+                      {tool.name} Options
+                    </h2>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    {readyItems.length} file{readyItems.length === 1 ? '' : 's'} ready
+                  </span>
+                </div>
+
+                <ToolOptionsForm
+                  tool={tool}
+                  options={options}
+                  disabled={isProcessing}
+                  onChangeOptions={(next) => {
+                    setOptions(next);
+                    setResult(null);
+                  }}
+                />
               </div>
 
-              <ToolOptionsForm
-                tool={tool}
-                options={options}
-                disabled={isProcessing}
-                onChangeOptions={(next) => {
-                  setOptions(next);
-                  setResult(null);
-                }}
-              />
-
-              <div className="pt-2">
+              {/* The Signature Big Action Button at the Bottom */}
+              <div className="pt-4 border-t border-slate-200 space-y-2">
                 <button
                   type="submit"
                   disabled={!canExecute}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-control bg-primary px-5 py-3 text-sm font-semibold text-primary-ink transition-colors duration-fast hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`smooth-interactive inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-4 text-base font-bold transition-all duration-200 ${getActionBtnClasses()}`}
                 >
-                  <Play className="h-4 w-4" aria-hidden="true" />
+                  <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   <span>{tool.actionLabel}</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </button>
+
                 {!canExecute && !isProcessing && (
-                  <p className="mt-2 text-center text-xs text-muted">
+                  <p className="text-center text-xs font-medium text-slate-500">
                     {tool.minFiles >= 2
-                      ? `Please select at least ${tool.minFiles} valid files to continue.`
-                      : 'Please select a valid file to continue.'}
+                      ? `Select at least ${tool.minFiles} files to execute.`
+                      : 'Select a valid document to execute.'}
                   </p>
                 )}
               </div>
             </form>
-
-            <section
-              aria-labelledby="tool-limitations-heading"
-              className="border-t border-border px-5 py-4 space-y-1.5"
-            >
-              <h3
-                id="tool-limitations-heading"
-                className="text-xs font-semibold text-ink"
-              >
-                Notes
-              </h3>
-              <ul className="list-disc pl-4 space-y-1 text-xs text-muted">
-                {tool.limitations.map((limit, idx) => (
-                  <li key={idx}>{limit}</li>
-                ))}
-              </ul>
-            </section>
           </aside>
         </div>
+
+        {/* Scanned PDF Modal */}
+        <ScannedPdfOcrModal
+          isOpen={isOcrPromptOpen}
+          fileName={scannedFilePrompted?.name || ''}
+          onApplyOcr={handleApplyOcr}
+          onContinueWithoutOcr={handleContinueWithoutOcr}
+          onClose={handleCloseOcrModal}
+        />
+
+        {/* Page Preview Modal */}
+        {previewItem && (
+          <PdfPagePreviewModal
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+          />
+        )}
       </div>
-
-      <PdfPagePreviewModal
-        item={previewItem}
-        onClose={() => setPreviewItem(null)}
-      />
-
-      <ScannedPdfOcrModal
-        isOpen={isOcrPromptOpen}
-        fileName={scannedFilePrompted?.name}
-        onApplyOcr={handleApplyOcr}
-        onContinueWithoutOcr={handleContinueWithoutOcr}
-        onClose={handleCloseOcrModal}
-      />
     </main>
   );
 };
